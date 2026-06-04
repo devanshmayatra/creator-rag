@@ -18,7 +18,13 @@ def get_db():
     
     if _qdrant_client is None:
         print("Connecting to Qdrant storage engine...")
-        _qdrant_client = QdrantClient(path=QDRANT_PATH)
+        if os.getenv("QDRANT_HOST_URL"):
+            _qdrant_client = QdrantClient(
+                url=os.getenv("QDRANT_HOST_URL"),
+                api_key=os.getenv("QDRANT_API_KEY"),
+            )
+        else:
+            _qdrant_client = QdrantClient(path="./local_qdrant_db")
         
         print("Loading local embedding weights (BGE-Small)...")
         _embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-small-en-v1.5")

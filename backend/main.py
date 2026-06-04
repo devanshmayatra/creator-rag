@@ -28,45 +28,33 @@ class ChatInput(BaseModel):
     history: list[dict] = []
     
 @app.get("/api/video/{video_id}")
-async def get_video_data(video_id: str):
-    """Fetches all metadata and perfectly reconstructs the transcript for a given video."""
+async def get_video_metadata(video_id: str):
     try:
-        qdrant_client, _ = get_db()
+        # 1. Get the unified cloud client
+        qdrant_client, vector_store = get_db()
         
-        # Fetch all chunks for this video (limit to 1000 chunks, which is ~4 hours of speaking)
-        results, _ = qdrant_client.scroll(
-            collection_name=COLLECTION_NAME,
+        # 2. Search Qdrant Cloud for this specific video's metadata
+        records, next_page = qdrant_client.scroll(
+            collection_name="creator_analytics",
             scroll_filter=models.Filter(
                 must=[
                     models.FieldCondition(
-                        key="metadata.video_id",
+                        key="metadata.video_id", # Make sure this key matches how you saved it!
                         match=models.MatchValue(value=video_id)
                     )
                 ]
             ),
-            limit=1000, 
-            with_payload=True,
-            with_vectors=False
+            limit=1 # We only need 1 chunk to grab the metadata
         )
         
-        if not results:
-            raise HTTPException(status_code=404, detail="Video not found in database")
+        if not records:
+            raise HTTPException(status_code=404, detail="Video metadata not found in cloud")
             
-        video_metadata = results[0].payload.get("metadata", {})
+        # 3. Return the payload securely
+        return {"status": "success", "data": {"metadata": records[0].payload["metadata"]}}
         
-        sorted_chunks = sorted(results, key=lambda x: x.payload.get("metadata", {}).get("chunk_index", 0))
-        
-        full_transcript = "\n\n".join([chunk.payload.get("page_content", "") for chunk in sorted_chunks])
-        
-        return {
-            "status": "success",
-            "data": {
-                "metadata": video_metadata,
-                "full_transcript": full_transcript,
-                "total_chunks_stored": len(results)
-            }
-        }
     except Exception as e:
+        print(f"Error fetching video {video_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
     
 @app.post("/api/chat")
