@@ -16,10 +16,8 @@ def _extract_yt_transcript(video_id: str) -> str:
     supported by your specific package version.
     """
     try:
-        # 1. Instantiate the class and call fetch() directly
         transcript_list = YouTubeTranscriptApi().fetch(video_id)
         
-        # 2. Extract the .text attribute from the returned objects
         full_text = " ".join(t.text for t in transcript_list)
         
         print(f"Successfully extracted {len(full_text)} characters from YouTube transcript.")
@@ -28,7 +26,7 @@ def _extract_yt_transcript(video_id: str) -> str:
     except Exception as e:
         print(f"Transcript failed for YT {video_id}: {e}")
         return ""
-  
+
 def _transcribe_audio_with_groq(audio_path: str) -> str:
     print(f"Sending audio to Groq for transcription: {audio_path}")
     with open(audio_path, "rb") as audio_file:
@@ -47,6 +45,7 @@ def extract_video_info(url: str) -> VideoData:
         'quiet': True,
         'no_warnings': True,
         'extract_flat': False,
+        'cookiefile': 'cookies.txt',
     }
     
     temp_audio_path = None
