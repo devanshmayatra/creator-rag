@@ -3,6 +3,7 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams
 from langchain_qdrant import QdrantVectorStore
 from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEndpointEmbeddings
 
 QDRANT_PATH = "./local_qdrant_db"
 COLLECTION_NAME = "creator_analytics"
@@ -27,7 +28,11 @@ def get_db():
             _qdrant_client = QdrantClient(path="./local_qdrant_db")
         
         print("Loading local embedding weights (BGE-Small)...")
-        _embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-small-en-v1.5")
+        _embeddings = HuggingFaceEndpointEmbeddings(
+            model="BAAI/bge-small-en-v1.5",
+            task="feature-extraction",
+            huggingfacehub_api_token=os.getenv("HF_TOKEN")
+        )
         
         # Guard: Validate existing collection dimensions to prevent parameter conflicts
         try:
