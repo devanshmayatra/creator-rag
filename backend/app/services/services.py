@@ -15,7 +15,7 @@ print(f"--- DEBUG: Looking for cookies at {COOKIE_PATH} ---")
 print(f"--- DEBUG: Does cookie file exist? {os.path.exists(COOKIE_PATH)} ---")
 
 ydl_opts = {
-    'format': 'bestaudio/best',
+    'format': 'm4a/bestaudio/best',
     'cookiefile': COOKIE_PATH,
     'quiet': True,
     'no_warnings': True
