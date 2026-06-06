@@ -41,11 +41,14 @@ def extract_video_info(url: str) -> VideoData:
     is_instagram = "instagram.com" in url
     platform = "instagram" if is_instagram else "youtube"
     
+    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
+    COOKIE_PATH = os.path.join(BASE_DIR, "cookies.txt")
+    
     ydl_opts = {
         'quiet': True,
         'no_warnings': True,
         'extract_flat': False,
-        'cookiefile': 'cookies.txt',
+        'cookiefile': COOKIE_PATH,
     }
     
     temp_audio_path = None
